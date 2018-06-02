@@ -1,0 +1,20 @@
+\begin{table}[tbh]
+\centering
+\begin{tabular}{|c|c|c|c|c|} 
+ \hline
+ \multirow{3}{*}{$top-k$} & \multicolumn{4}{|c|}{FB15K} \\
+\cline{2-5}
+ & $conf$ & $pcaconf$ & $econf(HolE)$ & $econf(SSP)$ \\
+ \hline
+10 & 0.900 & 0.494 & \textbf{1.000} & \textbf{1.000} \\
+20 & 0.900 & 0.349 & 0.950 & \textbf{1.000} \\
+50 & 0.881 & 0.357 & 0.936 & \textbf{0.937} \\
+100 & 0.855 & 0.373 & 0.885 & \textbf{0.895} \\
+200 & 0.842 & 0.373 & 0.870 & \textbf{0.875} \\
+500 & 0.795 & 0.348 & 0.805 & \textbf{0.805} \\
+ \hline
+\end{tabular}
+\newline
+\caption{Average quality of top rules ranked by different assessing metrics on FB15K dataset. Our embedding confidence uses standard confidence as the rule-based part, HolE and SSP models for the embedding part.}
+\label{table:fb15k_quality}
+\end{table}

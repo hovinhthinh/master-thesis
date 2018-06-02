@@ -1,0 +1,35 @@
+\addtotoc{Abstract}  % Add the "Abstract" page entry to the Contents
+\abstract{
+\addtocontents{toc}{\vspace{1em}}  % Add a gap in the Contents, for aesthetics
+Knowledge Graphs (KGs) play an important role in various information systems and have  application in many fields such as Semantic Web Search, Question Answering and Information Retrieval. KGs present information in the form  of entities and relationships between them. Modern KGs could contain up to millions of entities and billions of facts, and they are usually built using automatic construction methods. As a result, despite the huge size of KGs, a large
+number of facts between their entities are still missing. That is the reason why we
+see the importance of the task of Knowledge Graph Completion (a.k.a. Link Prediction), which concerns the prediction of those missing facts.
+
+Rules over a Knowledge Graph capture 
+%frequent
+interpretable 
+patterns in data
+%of predicates and their arguments,
+%they are heavily used in numerous applications, 
+and various methods for rule learning have been proposed. 
+Since KGs are inherently incomplete,
+rules can be used to deduce missing facts. 
+Statistical measures for learned rules such as confidence reflect rule quality well when the KG
+is reasonably complete; however, these measures might be misleading otherwise. 
+%Missing data in an incomplete KG may not follow
+%the rules' patterns.
+%GW: this argument about patterns in missing data sounds odd to me, hence commented out
+So, it is difficult to learn high-quality
+rules from the KG alone, 
+and scalability dictates that only a small set
+of candidate rules is generated.
+Therefore, the ranking and pruning 
+of candidate rules are major problems. To address this issue, we propose a rule learning method that utilizes probabilistic representations of missing facts. In particular, we iteratively extend rules induced from a KG by relying on feedback from a precomputed embedding model over the KG and
+optionally external information sources including text corpora. The contributions of this thesis are as follows:
+\begin{itemize}
+\item We introduce a framework for rule learning guided by external sources.
+\item We propose a concrete instantiation of our
+framework to show how to learn high-quality rules by utilizing feedback from a pretrained embedding model. 
+\item We conducted experiments on real-world KGs that demonstrate the effectiveness of our novel approach with respect to both the quality of the learned rules and fact predictions that they produce.
+\end{itemize}
+\clearpage

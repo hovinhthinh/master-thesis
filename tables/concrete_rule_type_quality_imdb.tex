@@ -1,0 +1,20 @@
+\begin{table}[tbh]
+\centering
+\begin{tabular}{|c|c|c|c|} 
+ \hline
+ \multirow{2}{*}{$topk$} & \multicolumn{3}{|c|}{IMDB} \\
+\cline{2-4}
+ & $conf$ & $pcaconf$ & $econf(TransE)$ \\
+ \hline
+5 & 0.591 & 0.167 & \textbf{0.631} \\
+10 & \textbf{0.409} & 0.257 & \textbf{0.409}\\
+20 & 0.28 & 0.192 &\textbf{0.282} \\
+30 & 0.213 & 0.171 & \textbf{0.214} \\
+40 & \textbf{0.169} & 0.164 & 0.168 \\
+ \hline
+\end{tabular}
+\newline
+\gad{merge with FB15K}
+\caption{Average quality of top rules ranked by different assessing metrics on IMDB dataset. Our embedding confidence uses standard confidence as the rule-based part and TransE model for the embedding part.}
+\label{table:imdb_quality}
+\end{table}

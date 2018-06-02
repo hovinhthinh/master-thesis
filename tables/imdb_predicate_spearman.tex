@@ -1,0 +1,22 @@
+\begin{table}[tbh]
+\centering
+\begin{tabular}{|c|c|c|c|c|c|} 
+ \hline
+ \multirow{2}{*}{Predicate} & \multirow{2}{*}{Num. rules} & \multicolumn{4}{|c|}{Spearman's rank correl. coef.} \\
+\cline{3-6}
+ & & $conf$ & $ew=.2$ & $ew=.5$ & $ew=.8$ \\
+ \hline
+\textit{createdBy} & 22 & 0.876 & 0.911 & \textbf{0.936} & 0.927 \\
+\textit{directedBy}  & 24 & \textbf{0.951} & 0.925 & 0.923 & 0.918\\
+\textit{created} &  22 & 0.883 & 0.928 & \textbf{0.973} & 0.967\\
+\textit{writtenBy} & 8 & 0.762 & 0.810 & \textbf{0.905} & \textbf{0.905}\\
+\textit{directed} &  25 & 0.932 & 0.965 & \textbf{0.968} & \textbf{0.968}\\
+\textit{wrote} & 8 & 0.738 & 0.762 & \textbf{0.929} & \textbf{0.929}\\
+\textit{influences} & 8 & 0.833 & 0.857 & \textbf{0.905} & \textbf{0.905}\\
+\textit{influencedBy} & 8 & 0.905 & 0.881 & \textbf{0.952} & \textbf{0.952}\\
+ \hline
+\end{tabular}
+\newline
+\caption{Performance of different rules ranking metrics with some specific head predicate on IMDB dataset. TransE model is used for embedding part of the embedding confidence}
+\label{table:imdb_predicate_spearman}
+\end{table}

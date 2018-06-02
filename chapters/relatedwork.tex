@@ -1,0 +1,93 @@
+%!TEX root = ../main.tex
+
+
+\chapter{Related Work}
+\label{sec:related-work}
+There are several existing approaches for solving the problem of KG completion. In this chapter, we give an overview about relevant works from these approaches.
+
+\section{Knowledge Graph Latent Feature Models}
+Aiming at the problem of knowledge graph completion, Latent Feature Models (or Embedding Models) have gained attention from research community in the last few years. These models encode each entity and relation of the knowledge graph as a low-dimensional vector (or embedding). Each unknown fact of the knowledge graph is then given a score computed from a mathematical formula based on the embeddings of its subject, predicate and object. These scores reflect the trustfulness of those facts. The process of learning these embedding vectors is a machine learning problem. In particular, Stochastic Gradient Descent is used to train the embeddings to minimize the defined loss function, which indicates the total plausibility of existing facts of the knowledge graph.
+
+\begin{table}[t]
+\centering
+\begin{tabular}{ | l | l | } 
+ \hline
+ \textbf{MODEL} & \textbf{NUMBER OF PARAMETERS} \\ 
+ \hline
+ RESCAL\cite{conf/icml/NickelTK11} & $O(n_ek +n_rk^2)$    \\ 
+ SE\cite{Bordes:2011:LSE:2900423.2900470} & $O(n_ek +2n_rk^2)$ \\ 
+ SME(Linear)\cite{DBLP:journals/corr/abs-1301-3485} & $O(n_ek +n_rk +4k^2)$  \\ 
+ SME(Bilinear)\cite{DBLP:journals/corr/abs-1301-3485} &  $O(n_ek +n_rk +2k^3)$ \\ 
+ LFM \cite{Jenatton:2012:LFM:2999325.2999488} &  $O(n_ek +n_rk +10k^2)$ \\
+ \hline
+ TransE \cite{Bordes:NIPS2013} & $O(n_ek +n_rk)$  \\ 
+ HolE\cite{DBLP:conf/aaai/NickelRP16} & $O(n_ek +n_rk)$  \\ 
+ \hline
+ SSP \cite{DBLP:conf/aaai/0005HMZ17} & $O(2n_ek +n_rk)$\\
+ \hline
+\end{tabular}
+\caption{Numbers of parameters for some embedding models} (adapt from \cite{Bordes:NIPS2013}). $n_e$ and $n_r$ are the number of entities and binary predicates; $k$ is the embeddings dimension.
+\label{table:embedding_recap}
+\end{table}
+
+A large number of models have been introduced in the literature to learn the representation feature vectors of entities and relations of the knowledge graphs. Some possibilities are RESCAL \cite{conf/icml/NickelTK11}, Neural Tensor Network (NTN) \cite{NIPS2013_5028}, Structured Embedding (SE) \cite{Bordes:2011:LSE:2900423.2900470}, HolE \cite{DBLP:conf/aaai/NickelRP16}, ComplEx \cite{DBLP:journals/corr/TrouillonWRGB16} and TransE \cite{Bordes:NIPS2013}. Table \ref{table:embedding_recap} recaps some models having been introduced in the literature and their memory complexity.
+
+ \subsection{TransE - The Translating Embedding Model}
+ The Translating Embedding Model (TransE \cite{Bordes:NIPS2013}) is among the most prominent state-of-the-art embedding models that have been proposed to tackle the link prediction task. Its main advantages are efficiency and simplicity. TransE encodes each entity as a vector $e \in \mathbb{R}^{k}$ and each relation as a vector $r \in     \mathbb{R}^{k}$. The motivation behind this model comes from the idea that triples of the knowledge graph could be represented as the translation of embeddings over the latent vector space. In particular, the score of each given triple $\tuple{s,p,o}$ is computed using the following formula:
+ \begin{displaymath}
+ score_{\tuple{s,p,o}} = -d(e_s + r_p, e_o) = -||e_s + r_p - e_o||_{L_{1,2}}
+ \end{displaymath}
+ in which, the distance function $d$ is defined as the $L_{1,2}$-norm function. To learn the embedding representation of entities and relations, TransE model is then trained with the margin-based pairwise loss training \cite{Bordes:NIPS2013} to maximize the margin between existing triples of the knowledge graph and some random false triples. This training technique is well-known and is used not only in TransE, but also in many other embedding models. The number of parameters in TransE model is linearly dependent on the number of entities and relations, which witnesses its effectiveness. TransE runs fast and could be potentially applied on large knowledge graphs.
+
+ The TransE model is the baseline for a large number of other embedding models. In \cite{Minervini:2016:LSL:2851613.2851841}, the authors improve TransE by leveraging additional schema knowledge. In \cite{DBLP:conf/coling/JiangLGSCLS16}, TransE model is enhanced with temporal information about facts of the KG. Meanwhile, STransE \cite{DBLP:journals/corr/NguyenSQJ16a} is introduced based on the combination of TransE and Structured Embedding model
+ (SE) \cite{Bordes:2011:LSE:2900423.2900470}. TransH \cite{Wang:2014:KGE:2893873.2894046} improves TransE by projecting the embeddings of subjects and objects into a hyperplane before translating. Additionaly, TransR \cite{Lin:2015:LER:2886521.2886624} continues enhancing the performance of TransH by allowing the feature vectors of entities and relations to have different dimensions.
+\subsection{HolE - The Holographic Embedding Model}
+Another state-of-the-art embedding model for KG completion task that has been recently proposed is the Holographic Embedding Model (HolE \cite{DBLP:conf/aaai/NickelRP16}). In terms of memory complexity, similarly to TransE model, HolE also stores a vector $e \in \mathbb{R}^{k}$ for each entity and a vector $r \in \mathbb{R}^{k}$ for each relation. However, its scoring function is totally different. The HolE model is quite closed to holographic models of associative memory \cite{DBLP:conf/aaai/NickelRP16}, where it takes advantage of \textit{circular correlation} to represent the likelihood scores of facts. In particular, HolE defines the scoring function as follows:
+ \begin{displaymath}
+ score_{\tuple{s,p,o}} = \sigma(r_p^\top cxcorr(e_s,e_o))
+ \end{displaymath}
+where $\sigma$ is the sigmoid function and $cxcorr(e_s,e_o)$ denotes the \textit{circular correlation} of representation vectors of the subject and the object, which could be computed efficiently by using Fast Fourier Transform (FFT) technique. By employing \textit{circular correlation} operator, the model can capture rich interactions over entities and relations of the KG, and at the same time be fast, easy to compute, and might potentially scale to large KGs.
+\subsection{SSP - The Semantic Space Projection Embedding Model}
+\label{related:ssp}
+Unlike TransE model and HolE model, which work only on the given knowledge graph, the Semantic Space Projection (SSP \cite{DBLP:conf/aaai/0005HMZ17}) is a state-of-the-art model among the class of embedding models that support external resources. In particular, apart from the KG itself, each entity of the KG might be given a description text that will also be considered during the training process of the SSP model. The model builds the connection between the symbolic triples of the KG and the external entities description texts, and then facts' likelihood is extracted based on the two sources of information.
+
+More specifically, SSP model stores two types of embeddings. First, similarly to TransE and HolE, the SSP model also encodes each entity and relation of the KG with a vector $e \in \mathbb{R}^{k}$ and $r \in \mathbb{R}^{k}$, correspondingly, which are the embeddings generated from KG's triples. Second, each entity of KG is also given a semantic vector $t \in \mathbb{R}^{k}$ computed from the description texts. Finally, SSP defines the likelihood function as follows:
+\begin{displaymath}
+ score_{\tuple{s,p,o}} = \lambda||l - c^\top lc||^2_2 - ||l||^2_2
+\end{displaymath}
+where hyper-parameter $\lambda$ is the balance factor between the two parts, $l$ is the loss vector and $c$ is the semantic composition vector, given by:
+\begin{displaymath}
+l\;\dot{=}\;e_s + r_p - e_o\;\;\;\;\;\text{and}\;\;\;\;\;c\;\dot{=}\;\frac{t_s + t_o}{||t_s + t_o||_2^2}
+\end{displaymath}
+The number of parameters is linearly dependent on the number of entities and relations of the KG, together with the ability to integrate external resources, SSP is a very efficient embedding model in terms of running time, memory complexity as well as prediction quality.
+\section{Relational Rule Learning}
+Alternative techniques for addressing the KG link prediction task include rule-based approaches. Rule-based systems extract logical rules from the knowledge graph via mining methods and then use these rules to predict missing links. Traditionally learning rules from data has been faced in the context of Inductive Logic Programming (ILP) \cite{probfoil,DBLP:conf/ijcai/RaedtDTBV15,DBLP:conf/clima/CorapiSIR11}, where given background knowledge and a set of positive and negative examples over target predicates, the task is to learn rules for predicting the existence of missing facts from these predicates. 
+In our setting, the negative examples are not available, which prohibits application of the off-the-shelf ILP rule learners. 
+
+To overcome this obstacle, a common approach is to treat the problem as an unsupervised relational learning task, and apply algorithms for relational association rule mining such as \cite{DBLP:conf/esf/GoethalsB02,amie,rdf2rules,Chen:2016:OP:2882903.2882954,trantowards}. In AMIE \cite{amie-old,amie}, rules are constructed by adding atoms one after another in a top-down fashion through the usage of mining operators. While AMIE mines 1 rule at a time, the other state-of-the-art system called RDF2Rules \cite{rdf2rules} parallelizes this process through the extraction of the so-called Frequent Predicate Cycles (i.e. cycles of predicates with specific directions that appear frequently in the KG), which are then post-processed to cast into rules. Recently proposed algorithm Ontological Pathfinding (OP) \cite{Chen:2016:OP:2882903.2882954} exploits various optimization techniques including parallelism, pruning and partitioning to extract rules from KGs. While above systems focus on mining only Horn rules (i.e. rules without negated atoms), RUMIS \cite{trantowards} supports also non-monotonic rules with negated parts in their body. All of these systems use standard metrics to assess the quality of the rules such as support, confidence and conviction.
+
+
+%to account for the feedback from a precomputed embedding model requested on demand during the rule construction.
+
+
+\section{Combining Rule-based Approach with Embedding-based Approach}\label{related_work:combine}
+So far we have discussed two different approaches for tackling the link prediction problem. Since logical rules are easily interpretable, rule-based methods could achieve a high accuracy. However, they process only small subsets of the knowledge graph and therefore are unable to capture global relational patterns inside the knowledge graph. In contrast, while embedding-based methods can capture some unseen characteristics of entities and relations, the results they produce are hard to interpret.
+%There also exist some works combining the rule-based approach and embedding approach to tackle the link prediction problem. 
+
+A natural idea of combining the embedding-based and rule-based methods has led to a number of proposals.
+In \cite{Wang2015KnowledgeBC}, existing embedding models (in particular RESCAL and TransE) are boosted by imposing some physical and logical rules through an Integer Linear Program (ILP). Introduced rules include:\\
+\noindent- \textit{noisy observation}: reflects the fact that some existing triples of the knowledge graph could be false.\\
+\noindent- \textit{argument type expectation}: puts a constraint on the type of subject/object connected by each specific predicate.\\
+\noindent- \textit{at-most-one restraint}: restricts the cardinality of head and tail of each relation.\\
+\noindent- \textit{simple implication}: ensures the correctness of relation implication. For example: \textit{isMale} implies \textit{isPerson}.
+
+The work \cite{DBLP:conf/emnlp/GuoWWWG16} proposes the embedding model KALE, which also takes TransE model into account, and then enhances it with logical rules. KALE uses t-norm fuzzy logics to modelize rules. Apart from minimizing the total plausibility of existing triples as in TransE model, KALE also minimizes the plausibility of instances of rules in the knowledge graph. In addition, there are other works focusing on enhancing embedding models with (possibly learned) rules and constraints, e.g.~\cite{DBLP:journals/corr/abs-1711-11231,DBLP:conf/sigir/RastogiPD17}. 
+%However, to the best of our knowledge, rule learning enhanced with feedback from embedding models has not been considered so far.
+
+A natural way to improve the quality of rules learned %over
+from incomplete KGs
+that has recently gained attention~\cite{DBLP:journals/corr/YangYHGD14a,DBLP:conf/nips/YangYC17} is to completely rely on embedding models during the rule learning process. 
+However, the existing methods are purely statistics-based, i.e., they reduce the rule learning problem to algebraic operations on neural-embedding-based representations of a given KG. Indeed,~\cite{DBLP:journals/corr/YangYHGD14a} constructs rules by modeling relation composition as multiplication or addition of two relation embeddings. The authors of~\cite{DBLP:conf/nips/YangYC17} propose a differentiable system for learning models defined by sets of first-order rules that exploits a connection between inference and sparse matrix multiplication \cite{DBLP:journals/corr/Cohen16b}. % However, both of these works target very restricted so-called chain-like rules, where the body relations form a directed path in the KG, which is closed by the head predicate,  and do not support negations.
+Typically, existing approaches pose strong restrictions on the patterns encoded in rules that they can learn, and therefore these methods do not allow to learn rules that reflect natural and interesting patterns.
+%For example, existing approaches~\cite{DBLP:journals/corr/YangYHGD14a,DBLP:conf/nips/YangYC17}
+%can learn $r_1$, but they cannot learn $r_2$ or $r_3$.

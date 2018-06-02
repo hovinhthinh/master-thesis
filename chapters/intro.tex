@@ -1,0 +1,445 @@
+%!TEX root = ../main.tex
+
+\chapter{Introduction}\label{sec:intro}
+
+%\noindent{\bf Motivation.} 
+\section{Motivation}
+Rules are widely used to 
+represent relationships and dependencies between data items in datasets
+and to capture the underlying patterns in data%
+~\cite{Agrawal:1993:MAR:170036.170072,DBLP:books/mit/PF91/Piatetsky91}.
+%Rules are heavily used in numerous applications
+Applications of rules 
+include health-care~\cite{DBLP:series/isrl/Wojtusiak14}, telecommunications~\cite{DBLP:conf/kdd/MannilaTV95}, 
+manufacturing~\cite{DBLP:journals/ki/AuriolMG96}, and
+commerce~\cite{DBLP:conf/pkdd/RasW00,DBLP:journals/kais/ImRW10}.
+%
+In order to facilitate rule construction, a variety of
+rule learning methods have been developed,
+see e.g.~\cite{DBLP:conf/ruleml/FurnkranzK15,association-rule-mining-overview} for an overview.
+Moreover, various statistical measures such as confidence,
+actionability, and unexpectedness to evaluate the quality of the learned rules have been proposed. 
+
+Rule learning has recently been adapted to the setting of
+ Knowledge Graphs (KGs)~\cite{amie,rdf2rules,gad2016,trantowards}
+where data is represented as a graph of entities interconnected via relations and labeled with classes, or more formally as a set of grounded binary and unary atoms typically referred to as facts.
+%a collection of interconnected entities enriched with semantic annotations.
+Examples of large-scale KGs include 
+Wikidata~\cite{wikidata}, 
+%DBpedia~\cite{dbpedia}, 
+Yago~\cite{yago}, 
+NELL~\cite{NELL-aaai15},
+%Yago~\cite{yago},  
+%Freebase~\cite{Freebase},
+%NELL~\cite{NELL-aaai15}
+ and Google's KG~\cite{GoogleKG}.
+Since many KGs are constructed from semi-structured knowledge, such
+as Wikipedia, or harvested from the Web with the combination of statistical and linguistic methods, they are inherently incomplete~\cite{DBLP:journals/semweb/Paulheim17,amie}. 
+
+Rules over KGs are of the form $\mi{head \leftarrow body}$,
+where $\mi{head}$ is a binary atom and 
+$\mi{body}$ is a conjunction of, possibly negated, binary or unary atoms.
+When rules are automatically learned, statistical measures like
+support and confidence are used to assess the quality of rules.
+Most notably, the confidence of a rule is the fraction of
+facts predicted by the rule that are indeed true in the KG.
+However, this is a meaningful measure for rule quality only
+when the KG is reasonably complete.
+%Incompleteness of KGs affects the quality of learned rules:
+%the data that is missing in the incomplete KG may not follow the rules' patterns,
+%and thus the quality of rules computed over an incomplete KG can be misleading.\looseness=-1
+For rules learned from largely incomplete KGs, confidence and
+other measures may be misleading, as they do not reflect
+the patterns in the missing facts.
+For example, a KG that knows only (or mostly) male CEOs
+would yield a heavily biased rule 
+$\mi{gender(X,male) \leftarrow isCEO(X,Y), isCompany(Y)}$, 
+which does not
+extend to the entirety of valid facts beyond the KG.
+Therefore, it is crucial that rules can be ranked by a meaningful
+quality measure, % of quality, 
+which accounts for %takes 
+KG incompleteness. %into consideration.
+
+
+%
+\section{Example}
+Consider a KG about people's jobs, residence and
+spouses as well as office locations and headquarters of companies.
+Suppose that a rule learning method has computed the following two rules:
+{\small
+\begin{align}
+	\label{eq:ex-rule-1}
+\mi{r_1 :\ }& \mi{livesIn(X,Y) \leftarrow worksFor(X,Z), hasOfficeIn(Z,Y)}\\[-.5ex]
+	\label{eq:ex-rule-2}
+\mi{r_2 :\ }& \mi{ livesIn(Y,Z) \leftarrow marriedTo(X,Y), livesIn(X,Z)}%\\[-.5ex]
+\end{align}}
+The rule $r_1$ is quite noisy, as a company may have offices in many cities, %and
+but employees live and work in only one of them, while
+the rule $r_2$ clearly is of higher quality. 
+However, depending on how the KG is populated with instances,
+the rule $r_2$ could nevertheless score higher than $r_1$ in terms of confidence
+measures. 
+For example, the KG may contain only a specific subset of company offices
+and only people who work for specific companies. 
+%However, i
+If we knew the complete KG, then the rule $r_2$
+should presumably be ranked higher than $r_1$.
+
+Suppose we had a perfect oracle for the true and complete KG. Then
+we could learn even more sophisticated rules such as
+ {\small
+ \begin{align}
+\mi{r_3 :\ } &\mi{livesIn(X,Y) \leftarrow worksFor(X,Z), hasHeadquartersIn(Z,Y), \mi{not}\, locatedIn(Y,USA)}%[-1.5ex]
+	\label{eq:ex-rule-3}
+\end{align}}
+This rule would capture that most people work in the same city
+as their employers' headquarters, with the USA being an exception
+(assuming that people there are used to long commutes).
+This is an example of a rule that contains a negated atom in
+the rule body (so it is no longer a Horn rule) and has a partially
+grounded atom with a variable and a constant as its arguments.
+
+
+%%%GW: now point out opportunity for overcoming KG incompleteness
+%
+%\noindent{\bf Problem.} 
+\section{Problem}
+The problem of  KG incompleteness (i.e. KG completion, link prediction) has been tackled by methods that
+(learn to) predict missing facts for KGs 
+(or actually missing relational edges between
+existing entities). A prominent class of approaches is statistics-based and includes
+tensor factorization, e.g.~\cite{conf/icml/NickelTK11} and neural-embedding-based models, e.g.~\cite{Bordes:NIPS2013,DBLP:conf/aaai/NickelRP16}.
+Intuitively, these approaches turn a KG, possibly augmented with
+external sources such as 
+text% corpora
+~\cite{DBLP:conf/ijcai/WangL16,DBLP:conf/aaai/0005HMZ17}, 
+into a probabilistic representation
+of its entities and relations,
+known as \emph{embeddings}, 
+and then predict the likelihood of %a 
+missing facts by reasoning over the embeddings
+(see, e.g.~\cite{DBLP:journals/tkde/WangMWG17} for a survey).\looseness=-1 
+
+% {\tt GW: the following paragraph looks disruptive to me, does not really fit here -- I suggest moving it to the related work section}\\
+%
+% The natural direction of relying on embedding models during rule extraction to address the problem of incompleteness in KGs has recently gained attention~\cite{DBLP:journals/corr/YangYHGD14a,DBLP:conf/nips/YangYC17}.
+
+%
+
+%%%GW: now connect back to the theme of how embeddings can overcome the outlined problems
+These kinds of embeddings can complement the given KG and are a potential asset
+in overcoming the limitations that arise from incomplete KGs.
+Consider the following gedankenexperiment:
+we compute embeddings from the KG and external text sources,
+that can then be used to predict the complete KG that comprises all valid facts.
+This would seemingly be a perfect starting point for learning rules,
+without the bias and quality problems of the incomplete KG.
+However, this scenario is way oversimplified.
+The embedding-based fact predictions would themselves be very noisy,
+yielding also many spurious facts.
+Moreover, the computation of all fact predictions and the induction of all
+possible rules would come with a big scalability challenge: in practice,
+we need to restrict ourselves to computing merely 
+small subsets of likely fact predictions
+and promising rule candidates.
+
+
+
+%For instance,\href $r_1$ can be mined by these methods, while $r_2$ cannot. 
+
+% Thus, existing rule learning approaches that exploit embeddings,
+% pose strong restrictions on the patterns encoded in rules and therefore prohibits learning of rules with natural and interesting patterns.
+
+% This strong restriction on the rule patterns often prohibits extraction of interesting rules.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Thesis Goals and Research Challenges}
+The goals of this thesis are as follows:
+\begin{itemize}
+\item Design an abstract framework for learning rules from knowledge graphs that also takes into account the support from external sources to improve the rules' quality.
+\item Create a rule learning model of the above framework by initializing external sources with an embedding model and design a mining algorithm that establish an \textit{"user-in-the-loop"} inspired interaction between the mining process and the embedding model.
+\item Build a system that implements the designed model.
+\item Conduct various experiments to evaluate the proposed approach using the implemented system.
+\end{itemize}
+To achieve these goals, there are several challenges that we have to overcome:
+\begin{itemize}
+\item The interaction between the rules and the abstract external sources or the specific embedding models in our approach is not clearly defined yet. We need to express them somehow that can preserve the advantages from both rule-based and embedding-based approaches.
+\item We need to figure out how to make use of the defined interaction in learning rules. In particular, we need to develop an algorithm to extract high-quality rules from KGs. In addition, it is ideal if the extracted rules are of various forms, i.e. they could contain unary/binary predicates, positive/negative atoms.
+\item The system we build should be efficient in terms of both running time and memory consumption. Relevant optimization techniques should be established to meet these requirements.
+\item We need to construct benchmarks and define evaluation metrics relevant for the experiments. Moreover, the experiments should be conducted on different datasets.
+\end{itemize}
+
+\section{Contribution}
+%\section{Approach}
+In this work we propose an approach for rule learning guided by external sources
+that allows to learn high-quality rules from incomplete KGs.
+% In this work we propose
+% RuLES, a \textbf{Ru}le \textbf{L}earning method with \textbf{E}mbedding Models \textbf{S}upport,
+% that allows to learn high-quality rules from incomplete KGs.
+%GW: details on the form of rules is not the main contribution, should be pointed out later
+%rules with conjunctions of possibly negated atoms in their bodies
+%where variables satisfy a syntactic \emph{closeness} condition (see details in Section~\ref{sec:prelim})
+%and thus addresses the above-mentioned shortcomings of existing approaches.
+In particular, our method extends rule learning
+%traditional relational rule learning methods \cite{DBLP:conf/esf/GoethalsB02,amie} 
+by exploiting probabilistic representations of missing facts 
+computed by embedding models of KGs and possibly other external information sources. 
+%by accounting for feedback from a precomputed embedding model. % is tailored towards incomplete KGs and 
+% aims at improving the quality of rules learned %over 
+% from such KGs.
+% In particular, our approach
+% in a KG 
+%Intuitively, 
+We iteratively construct rules over a KG 
+and collect feedback from a precomputed embedding model, 
+through specific queries issued to the model 
+for assessing the quality of (partially constructed) rule candidates. 
+%GW: but nonmonotonic rules were already in our own prior work, hence the next sentence is commented out
+%Furthermore, RuLES benefits from the obtained likelihood to learn nonmonotonic rules
+%which was not captured by \cite{DBLP:conf/esf/GoethalsB02,amie}.
+%
+%is assessed
+%by issuing %special  
+%specific queries to the embedding model. 
+% Experiments on real-world KGs demonstrate the effectiveness of our novel approach both with respect to the quality of the learned rules and predictions that they produce.
+%
+%Differently from this proposal we account for possible inaccuracy of embedding models and thus %these approaches, in our work we extract more general rules with negated atoms from the original graph and %address the problem of 
+This way, the rule induction loop is interleaved with the guidance from the embeddings,
+and we avoid scalability problems.
+Our machinery is also more expressive than many prior works on rule learning from KGs,
+by allowing non-monotonic rules with negated atoms as well as partially grounded atoms. 
+%,and it generally scales well even with a huge number of distinct predicates.
+%(such as semantic types, which were disregarded, for example, in \cite{amie}
+%for scalability reasons).
+Within this framework, we devise confidence measures that capture rule quality
+better than previous techniques and thus improve the ranking of rules.
+
+% {\tt GW: drop the example here; disrupts the flow of the story}\\
+% \begin{example}
+% Continuing with the running example, 
+% assume that a text-enhanced embedding model predicts each dashed link in Figure~\ref{fig:kg} with the likelihood of $0.9$, 
+% and also facts $\mi{livesIn(julia,chicago)}$ and $\mi{livesIn(kate,china)}$ each with the likelihood of $0.2$. This extra knowledge witnesses that predictions produced by $r_2$ and $r_3$ are likely correct, while those made by $r_1$ are not. Effective exploitation of this observations 
+% should intuitively establish the %while preserving the quality of $r_1$ thus resulting in the 
+% desired ranking. 
+% \qed	\href
+% \end{example}
+
+% Our method is advantageous compared to previous proposals, as it heavily relies on the trusted existing facts in the KG, and consults with the possibly imperfect embedding model only on demand.  % exploit only limited embedding-based feedback, while heavily relying on the original graph. %, which is challenging, %In particular, embedding models 
+% %
+% The nature of embeddings limits the allowed forms of interaction with them to atomic queries, which makes
+% % with them 
+% the considered setting challenging and requires careful adaptation of existing inductive rule learning methods. 
+
+
+
+
+% and 
+%very restricted form of interaction with embedding models through atomic queries is possible the considered setting is challenging.
+% , i.e.,  the considered setting is offer numerical values attached to missing facts and can essentially answer only atomic queries. 
+% There is no clear method to get a direct decision about the assessed rule. Finally, due to the inaccuracy and incompleteness of both the original and augmented KGs, it is hard to construct a rule set that describes the ideal graph perfectly; thus, a good approximation should be developed.
+
+
+%\noindent{\bf Contribution.} 
+The salient contributions of our work are as follows.
+\begin{itemize}
+\item We propose a rule learning approach  guided by external sources, and show how to
+%a framework for an interactive learning of high quality rules relying on feedback from embedding models.
+%GW: there is nothing "interactive" here
+%a novel method for 
+learn high-quality rules by utilizing feedback from embedding models. 
+%
+%%%GW: the following is not really a genuine contribution of THIS paper, hence commented out
+%\item RuLES is exception-aware which allows to learn not only monotonic, but also non-monotonic rules,
+%that is, rules where bodies are conjunctions of possibly negated atoms where variables satisfy a syntactic %closeness condition.
+%
+ % \item We introduce a novel hybrid quality scoring function for rules that is capable of considering weighted facts.
+ % \evgeny{not mentioned in the intro, we should comment about it somewhere. We can say for example that there is a challenge of a good scoring function and other functions are not good, so we need to introduce a new one}
+%
+%
+%  \item We implemented our ideas in a prototypical system RuLES. %ERMS.
+%  
+%  
+  \item We implement our approach into a system prototype RuLES and present extensive experiments on real-world KGs including Freebase, Wikidata and IMDB, that demonstrate the effectiveness of our approach with respect to both the quality of the learned rules and the fact predictions that they produce.
+%  
+   % approach and conduct experiments to evaluate its performance against rule-based approaches and latent-based approaches on several datasets.
+\item Our code and data %is 
+are made available to the research community at\\
+%\href{http://people.mpi-inf.mpg.de/~gadelrab/RuLES/}{http://people.mpi-inf.mpg.de/\textasciitilde{}gadelrab/RuLES/}.
+\url{https://github.com/hovinhthinh/RuLES}
+\end{itemize}
+
+\section{Thesis Structure}
+The structure of this thesis is as follows. In chapter \ref{sec:related-work}, we 
+present related work, where various existing approaches for solving the KG completion task are briefly recapped. Chapter \ref{sec:prelim} provides background knowledge and preliminaries, including: knowledge graph, (non-)monotonic logic program, relational association rule learning and embedding model. In chapter \ref{sec:framework}, we present our approach in detail to tackle the link prediction task. Chapter \ref{chapter:impl} describes the usage of our developed system. Conducted experiments, results and their analysis are demonstrated in chapter \ref{sec:eva}. Finally, chapter \ref{chap:conclusion} concludes this thesis and outlines some relevant future research directions.
+
+%Note that our software as well as the data sources and rules that participated in our experiments 
+%can be downloaded%
+%\footnote{\url{https://github.com/hovinhthinh/kg-comp-embedding-rule}}
+% and thus are available for the  community.
+
+% We quality scores can be used %to classify them into positive and negative examples,
+% estimating negative facts %to
+% thus overcoming the open world assumption challenges.
+
+
+% \chapter{Introduction (previous version)}
+
+% \leanparagraph{Motivation}
+% Knowledge graphs (KGs) are large collections of %automatically extracted 
+% triples in the $\tuple{\mi{subject\;predicate\;object}}$ form. 
+% %KGs present information in the form of entities and relationships between them. In particular, they store relations between entities in triples of (subject, predicate, object) according to the RDF data model, which are
+% %also called facts.
+% They play an important role in such diverse applications as %various %information systems and have 
+% %applications %in many fields 
+% %such as 
+% semantic web search, question answering and information retrieval. 
+% % For example, the fact "Bob is a parent of Anna" could be encoded as the triple (Bob, parentOf, Anna), in which "Bob" is the subject, "parentOf" is the predicate and "Anna" is the object.
+% KGs %nowledge graphs 
+% are normally either manually curated via crowd-sourcing (e.g., Wikidata~\cite{wikidata}), or automatically extracted from 
+% Web resources %semi-structured data 
+% (e.g. DBpedia~\cite{dbpedia}, Yago~\cite{yago}, NELL~\cite{NELL-aaai15}). %Most huge knowledge graphs are created using the latter two approaches, which are automatic construction methods. Some examples of highly accurate knowledge graphs are YAGO, DBpedia, Wikidata and Freebase. 
+
+% Despite their huge size, % of these knowledge graphs, they 
+% KGs are still incomplete and sometimes inaccurate, which
+% %This leverages 
+% motivates the development of automatic KG completion approaches to 
+% augment %KGs
+% them with missing data as well as get rid of mistakes \cite{DBLP:journals/semweb/Paulheim17}.
+% %fill in the gap between 
+% %the KG and real life as well as fix inaccuracies.
+% %Because of the automatic construction, knowledge graphs are usually incomplete and are treated under the Open World Assumption (OWA): facts, which are not in the knowledge graph, are considered as unknown instead of false.  In other words,
+%  %despite the huge size of some knowledge graphs, a large
+% %number of facts between entities are still missing. That is the reason why we
+% %see the importance of the task of Knowledge Graph Completion
+% %(also known as link prediction), which concerns with
+% %predicting the existence (or the probability of existence) of
+% %those missing facts.
+% %\section{Approaches and Limitations}
+% %Figure \ref{fig:kg} shows a small part of a knowledge graph, in which solid arrows represent known facts of the knowledge graph, while dash arrows represent some true unknown facts that need to be predicted. 
+% %Various approaches for addressing the problem of knowledge graph completion exists. Some of them are listed below.
+% %\leanparagraph{Rule-based Methods}
+% Existing methods for predicting unseen data in KGs can be roughly divided into
+% two groups:  \emph{logic-based} and \emph{statistics-based}. 
+
+% The firsts focus on logic-based methods such as~\cite{Galarraga:2013:AAR:2488388.2488425,DBLP:journals/corr/WangL15i,gad2016,trantowards} to extract frequent patterns from the data and cast them into rules,
+% %learn the theory to build ideal graph by mining frequent patterns from the existing graph and %encode 
+% %cast them into %as inference 
+% %rules such as .... 
+% %Later these rules 
+% which are then utilized %along with the original KG facts are utilized 
+% to deduce %the 
+% potentially missing facts. For example, consider a fragment of KG depicted in Fig. \ref{fig:kg}. From this KG part, one can extract the rule \textit{$r_1$ : livesIn(X,Z) $\leftarrow$ marriedTo(X,Y), livesIn(Y,Z)}, stating that married people live together. Applying this rule missing living places of some people can be predicted thus completing the KG. The advantage of the rule-based techniques stems from their interpretability, i.e., they provide a clear explanation why a certain fact has been predicted. However, there are several issues with the existing rule extraction methods. First, due to the bias in the data and incompleteness of KGs, the standard rule metrics often prefer erroneous rules over good ones. For instance, the questionable rule \textit{$r_2$ : livesIn(X,Z) $\leftarrow$ worksAt(X,Y), hasOfficeIn(Y,Z)} predicting living place for a person relying on the office locations of his employer, mined from the KG in Figure~\ref{fig:kg} is actually ranked higher then $r_1$ from above.
+% Second, existing rule learning methods have the inevitable restriction on the form of local patterns that they exploit, which often prohibits extraction of interesting and unexpected rules from the data \cite{Nickel0TG16}. %The restriction lies at the fact that existing rule learning methods use some standard rule measures such as confidence (i.e., conditional probability of the rule’s head given its body) to guide the rule construction. These measures are computed based on only some local pattern of the KG, hence they may wrongly estimate the rule quality. 
+
+% Alternative statistics-based approaches 
+% apply well-known techniques
+% like tensor factorization, or neural-embedding-based models to learn representations (i.e. embeddings) of entities and relations for predicting likelihood of unseen facts (see e.g., \cite{DBLP:journals/tkde/WangMWG17} for overview). 
+% While these methods capture global patterns in the data, and can account for additional unstructured knowledge (e.g.,
+% text corpus \cite{DBLP:conf/ijcai/WangL16,DBLP:conf/aaai/0005HMZ17}) the predictions that they make are not easily explainable.
+
+%  % More advanced approaches~\cite{} learn nonmontonic rules %from an augmented KG in order 
+% % to provide more accurate predictions.
+% % \begin{example}
+% % \label{ex:rule_based}
+% % \gad{suggested: example rule with failure scenario}
+% % \end{example}
+% %Rule-based approach makes an assumption that the existence of a missing
+% %fact could be predicted from some rules extracted from the
+% %existing facts. For example, if we have two facts (Bob, parentOf, Anna) and (Alice, parentOf, Anna), we could predict that the fact (Bob, marriedTo, Alice) is likely to be true. 
+% %The main advantage of rules is that they are easily interpretable, which is crucial for verifying %manual assessment of 
+% %the computed predictions. %in some domains, e.g. biological KGs. 
+% %Moreover, %Also, 
+% %since these models are formalized as logical rules, they could achieve a high accuracy. 
+% %Furthermore, %the 
+% %rules 
+% %sets 
+% %can %easily 
+% %be exploited for %adopted in extending and 
+% %verifying the correctness of %other 
+% %data cleaning. Nevertheless, rule-based methods only capture limited number of local features (\ie surrounding relations). 
+
+% % The other \textit{latent-based} (i.e. embedding) such as~\cite{} which encodes the KG as a low dimensional vector for some hidden features; hence, predicting relationship between entities is derived from the interaction between their embeddings.\textit{latent-based} is capable of encoding richer features than \textit{rule-based} approach. Nerveless, it is hard to interpret the generated predictions.  Uninterpretablity of the results makes it difficult to assess the predictions by humans. 
+% % \begin{example}
+% % \label{ex:latent_based}
+% % \gad{suggested: example embedding results related to \ref{ex:rule_based}}
+% % \end{example}
+
+
+
+% To get the best out of the rule-based and embedding-based methods, in this work we develop a hybrid approach, in which rule learning is performed by exploiting a feedback obtained from the precomputed embedding model. This way we obtain explainable rules, which not only rely on the local frequent patterns in the graph, but also account for its complex hidden structures captured by the embedding model.
+
+
+% \leanparagraph{State-of-the-art and its limitations} 
+% While enhancing embedding models with the learned (soft) rules has been earlier proposed \cite{DBLP:journals/corr/abs-1711-11231}, to the best of our knowledge enhancing rule mining techniques with the feedback obtained from an embedding model has not been considered so far.
+% Recently, embedding models have been enhanced with manually-crafted rules and constraints (e.g., \cite{DBLP:conf/sigir/RastogiPD17,DBLP:conf/emnlp/GuoWWWG16}) or KG scheme in the form of a type hierarchy (e.g., \cite{DBLP:conf/semweb/KrompassBT15,DBLP:conf/www/LiJWLC16}).
+% While the predictions produced by these methods are of high quality, the results that they output are still not interpretable.
+% The main challenges to achieve an accurate interactive learning is that embedding-based feedback is limited to numerical values generated by the embedding method. Therefore, it can only answer a limited types of queries. There is no clear method to get a direct decision about the assessed rule. Finally, due to the inaccuracy and incompleteness of both the original and augmented KGs, it is hard to construct a rule set that describes the ideal graph perfectly; thus, a good approximation should be developed.
+
+% \leanparagraph{Approach and contributions}
+% In this work, we propose an interactive framework for learning nonmontonic rules of high quality %where we %can 
+% by benefiting from %the 
+% advantages of both approaches. 
+% %, namely, the interperability of the rules and rich structure grasped by embeddings. 
+% %The final ruleset is supposed to predict missing facts accurately. For that, 
+% More specifically, we integrate an embedding model as a feedback component to rule learning. The predictions of the embedding model are used for assessing the quality of the patterns by issuing specific queries to the embedding model. Unlike rule revision approaches such as~\cite{gad2016,trantowards}, our method: i) learns nonmonotonic rules,  ii) utilizes an augmented KG obtained from the embedding model %from an external rich method, i.e. latent model, not just a hypothetical augmentation based on a partial augmentation. 
+% ii) 
+% %facts in the augmented KG have 
+% quality scores can be used %to classify them into positive and negative examples, 
+% estimating negative facts %to 
+% thus overcoming the open world assumption challenges.
+% % \begin{example}
+% % \gad{suggested: an example linking \ref{ex:latent_based} \ref{ex:rule_based}}
+% % \end{example}
+% % \gad{we should add some text about why this task is challenging}\\
+
+
+
+% %\leanparagraph{Contributions} 
+% We summarize our contributions as follows: %in the following:
+% \begin{itemize}
+%   \item Introducing an exception-aware rules mining framework that utilizes latent models. 
+%   \item We introduce a novel hybrid quality scoring function that is capable of considering weighted facts.
+%   \item Finally, we build a system prototype ERMS of our approach and conduct experiments to evaluate its performance against rule-based approaches and latent-based approaches on several datasets.
+%   \item We made the developed %frame
+% software as well as data sources and rules available for the community~\footnote{https://github.com/hovinhthinh/kg-comp-embedding-rule}.
+% \end{itemize}
+
+
+%We now illustrate these phenomenon on the following running example.
+
+%%%GW
+% {\tt GW: I'm not happy with the example. 
+% First, the picture is hard to read, too complex to be visually appealing.
+% I suggest casting this into a set of small tables, one for each predicate.
+% Second, the non-monotonic rule now appears out of the sky -- not well-motivated at all.}\\
+% {\tt GW: Perhaps we should drop this detailed listing of instances
+% completely. It could also give the impression that the confidence
+% measure needs adjustment. A handful examples are just an
+% ad-hoc choice, not exactly a systematic picture of an 
+% incomplete vs. complete KG.}
+
+% \vspace{0ex}
+% \begin{example}
+% Figure~\ref{fig:kg} 
+% shows a fragment of a KG about people, companies, and cities where the relations reflect employment, marriage, places of residence, and office locations. 
+% In the figure the solid lines depict relations that are present in the KG, while dashed lines --- the missing ones. 
+% Consider three rules over this graph:\\[-2ex]
+% {\small
+% \begin{align*}
+% \mi{r_1 :\ }& \mi{livesIn(X,Y) \leftarrow worksAt(X,Z), hasOffice(Z,Y)},\\[-.5ex]
+% \mi{r_2 :\ }& \mi{ livesIn(Y,Z) \leftarrow marriedTo(X,Y), livesIn(X,Z)},\\[-.5ex]
+% \mi{r_3 :\ }& \mi{ livesIn(Y,Z) \leftarrow marriedTo(X,Y), livesIn(X,Z), not\;researcher(Y)}.\\[-2ex]
+% \end{align*}
+% }The rule $r_1$ indicates that people live in the same cities where the office of their job is located, $r_2$ says that people live in the same place where their spouses are,
+% while $r_3$ makes $r_2$ more precise by saying that these people should not be researchers.
+% %
+% One can easily verify that over the incomplete graph (\ie with solid lines only)
+% the confidence (i.e., conditional probability of rule's head given its body) of $r_1$ is higher than both $r_2$ and $r_3$.
+% Indeed, $r_1$ holds for five out of eight cases, 
+% while $r_2$ and $r_3$ for two out of six and for two out of five respectively. 
+% At the same time, in the completed KG the confidence of $r_2$ exceeds the one of $r_1$ and the confidence of $r_3$ is the highest of them all.
+% %Regarding $r_3$, its confidence is higher than for $r_2$ for both complete and incomplete KG.
+% \qed
+% \end{example}

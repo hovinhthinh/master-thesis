@@ -1,0 +1,18 @@
+\begin{table}[t]
+\centering
+\begin{tabular}{|c|c c|c c|c c|c c|}
+ \hline
+ \multirow{3}{*}{$top-k$}&\multicolumn{4}{|c|}{FB15K} & \multicolumn{4}{|c|}{WIKI44K}\\
+ \cline{2-9}&\multicolumn{2}{|c|}{Avg. prediction scr.}&\multicolumn{2}{|c|}{Avg. revision scr.}&\multicolumn{2}{|c|}{Avg. prediction scr.}&\multicolumn{2}{|c|}{Avg. revision scr.} \\
+ \cline{2-9} & RUMIS & ERMS & RUMIS & ERMS & RUMIS & ERMS & RUMIS & ERMS \\
+ \hline
+20 & 0.791 & 0.93 & 0.725 & 0.901 & 0.743 & 0.803 & 0.400 & 0.795 \\
+50 & 0.826 & 0.929 & 0.733 & 0.844 & 0.609 & 0.701 & 0.280 & 0.733 \\
+100 & 0.859 & 0.891 & 0.733 & 0.802 & 0.417 & 0.539 & 0.201 & 0.544\\
+200 & 0.848 & 0.897 & 0.704 & 0.793 & 0.253 & 0.339 & 0.114 & 0.323\\
+500 & 0.745 & 0.859 & 0.559 & 0.656 & - & - & - & - \\
+\hline
+\end{tabular}
+\caption{Average prediction and revision score of some top rules from ERMS vs RUMIS.}
+\label{table:exception_result}
+\end{table}

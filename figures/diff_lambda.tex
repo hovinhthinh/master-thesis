@@ -1,0 +1,36 @@
+\captionsetup[subfigure]{textfont=scriptsize}
+ \begin{figure}[t]
+     \centering
+      %Gad: to unify legend and save space
+     \subfloat{{\includegraphics[width=0.6\textwidth]{figures/new_exp1/legend-crop.pdf} }}\\[-1ex]
+     \setcounter{subfigure}{0}
+     \subfloat[Conf-HoLE on FB15K]{{\includegraphics[width=0.3\textwidth]{figures/new_exp1/fb15k_hole_conf-crop.pdf} }\label{fig:fb-HoLE-Conf}}
+     \subfloat[Conf-SSP on FB15K]{{\includegraphics[width=0.3\textwidth]{figures/new_exp1/fb15k_ssp_conf-crop.pdf} \label{fig:fb-SSP-Conf}}}
+     %\subfloat[RulES-H-PCA on FB15K]{{\includegraphics[width=0.3\textwidth]{figures/fb15k_hole_pca-crop.pdf} }}
+    \subfloat[PCA-SSP on FB15K]{{\includegraphics[width=0.3\textwidth]{figures/new_exp1/fb15k_ssp_pca-crop.pdf} }\label{fig:fb-SSP-PCA}} \\   
+    
+    \subfloat[Conf-TransE on Wiki44K]{{\includegraphics[width=0.3\textwidth]{figures/new_exp1/wiki44k_transe_conf-crop.pdf} }\label{fig:wi-TransE-Conf}}
+    \subfloat[Conf-SSP on Wiki44K]{{\includegraphics[width=0.3\textwidth]{figures/new_exp1/wiki44k_ssp_conf-crop.pdf} }\label{fig:wi-SSP-Conf}}
+     %\subfloat[RulES-H-PCA on Wiki44K]{{\includegraphics[width=0.3\textwidth]{figures/wiki44k_transe_pca-crop.pdf} }}
+     \subfloat[PCA-SSP on Wiki44K]{{\includegraphics[width=0.3\textwidth]{figures/new_exp1/wiki44k_ssp_pca-crop.pdf} }\label{fig:wi-SSP-PCA}} \\  
+    
+     \caption{Avg. prediction precision of the \textit{top-k} rules with various \textit{embedding weights}.}
+     \label{fig:diff_lambda}
+ \end{figure}
+%\captionsetup[subfigure]{labelformat=empty}
+%\begin{figure}[t]
+%    \centering    
+%    % \vspace*{-3mm}
+%    \subfloat{{\includegraphics[width=0.5\textwidth]{figures/new_exp1/legend-crop.pdf} }}\\[-2ex]
+%    \subfloat[FB15K(conf + HolE)]{{\includegraphics[width=0.33\textwidth]{figures/new_exp1/fb15k_hole_conf-crop.pdf} }}
+%    \subfloat[FB15K(conf + SSP)]{{\includegraphics[width=0.33\textwidth]{figures/new_exp1/fb15k_ssp_conf-crop.pdf} }}
+%    % \subfloat[PCA Confidence + HolE]{{\includegraphics[width=0.5\textwidth]{figures/new_exp1/fb15k_hole_pca-crop.pdf} }}
+%    \subfloat[FB15K(pcaconf + SSP)]{{\includegraphics[width=0.33\textwidth]{figures/new_exp1/fb15k_ssp_pca-crop.pdf} }}\\
+%    \subfloat[Wiki44K(conf + TransE)]{{\includegraphics[width=0.33\textwidth]{figures/new_exp1/wiki44k_transe_conf-crop.pdf} }}
+%    \subfloat[Wiki44K(conf + SSP)]{{\includegraphics[width=0.33\textwidth]{figures/new_exp1/wiki44k_ssp_conf-crop.pdf} }}
+%    % \subfloat[PCA Confidence + TransE]{{\includegraphics[width=0.5\textwidth]{figures/new_exp1/wiki44k_transe_pca-crop.pdf} }}
+%    \subfloat[Wiki44K(pcaconf + SSP)]{{\includegraphics[width=0.33\textwidth]{figures/new_exp1/wiki44k_ssp_pca-crop.pdf} }}\\
+%    
+%    \caption{Avg. \textit{predictions precision} of the top rules with various \textit{embedding weights} \gad{figures labels should be updated and height should be reduced }}
+%    \label{fig:fb15k_and_wiki44k}
+%\end{figure}

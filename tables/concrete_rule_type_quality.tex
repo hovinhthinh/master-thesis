@@ -1,0 +1,48 @@
+\begin{table}[t]
+\centering
+\begin{tabular}{|c|r r r r r|} 
+ \hline
+ \multirow{3}{*}{\textbf{\textit{top-k}}} & \multicolumn{5}{|c|}{\textbf{FB15K}}\\
+ \cline{2-6}
+ & \textbf{{~~~~~}Conf}&  \textbf{{~~~~~}PCA} & \textbf{{~~~~~}Conv} &\textbf{Conf-HolE}& \textbf{Conf-SSP}\\
+  & {\scriptsize($\lambda=0$)} & {\scriptsize($\lambda=0$)} & {\scriptsize($\lambda=0$)} & {\scriptsize($\lambda=0.3$)} & {\scriptsize($\lambda=0.3$)}\\
+ \hline
+\textbf{5} & 0.800 & 0.638 & \textbf{1.000} & \textbf{1.000} & \textbf{1.000}\\
+\textbf{10} & 0.900 & 0.506 & 0.900 & \textbf{1.000} & \textbf{1.000}\\
+\textbf{20} & 0.900 & 0.499 & 0.933 & 0.950 & \textbf{1.000}\\
+\textbf{50} & 0.881 & 0.410 & 0.884 & 0.936 & \textbf{0.937}\\
+\textbf{100} & 0.855 & 0.348 & 0.866 & 0.885 & \textbf{0.895}\\
+\textbf{200} & 0.842 & 0.355 & 0.818 & 0.870 & \textbf{0.875}\\
+ \hline
+\end{tabular}
+\begin{tabular}{|c|r r r r r|} 
+ \hline
+ \multirow{3}{*}{\textbf{\textit{top-k}}} & \multicolumn{5}{|c|}{\textbf{Wiki44K}}\\
+ \cline{2-6}
+ & \textbf{{~~~~~}Conf}&  \textbf{{~~~~~}PCA} & \textbf{{~~~~~}Conv} &\textbf{{~}Conf-Tr.E}& \textbf{Conf-SSP}\\
+  & {\scriptsize($\lambda=0$)} & {\scriptsize($\lambda=0$)} & {\scriptsize($\lambda=0$)} & {\scriptsize($\lambda=0.3$)} & {\scriptsize($\lambda=0.3$)}\\
+ \hline
+ \textbf{5} & 0.800 & 0.402 & 0.776 & \textbf{0.995} & 0.968 \\
+\textbf{10} & 0.638 & 0.321 & 0.721 & 0.863 & \textbf{0.932} \\
+\textbf{20} & 0.712 & 0.357 & 0.757 & 0.802 & \textbf{0.825} \\
+\textbf{50} & 0.670 & 0.352 & 0.670 & \textbf{0.675} & 0.674 \\
+\textbf{100} & \textbf{0.477} & 0.331 & 0.475 & 0.474 & 0.474\\
+ \hline
+\end{tabular}
+\begin{tabular}{|c|r r r r|} 
+ \hline
+ \multirow{3}{*}{\textbf{\textit{top-k}}} & \multicolumn{4}{|c|}{\textbf{IMDB}}\\
+ \cline{2-5}
+ & \textbf{{~~~~~}Conf}&  \textbf{{~~~~~}PCA} & \textbf{{~~~~~}Conv} &\textbf{{~}Conf-Tr.E}\\
+  & {\scriptsize($\lambda=0$)} & {\scriptsize($\lambda=0$)} & {\scriptsize($\lambda=0$)} & {\scriptsize($\lambda=0.3$)}\\
+ \hline
+\textbf{5} & 0.591 & 0.250 & 0.591 & \textbf{0.631} \\
+\textbf{10} & \textbf{0.409} & 0.160 & \textbf{0.409} & \textbf{0.409} \\
+\textbf{20} & 0.280 & 0.192 & 0.280 & \textbf{0.282} \\
+\textbf{30} & 0.213 & 0.171 & 0.213 & \textbf{0.214} \\
+\textbf{40} & \textbf{0.169} & 0.164 & \textbf{0.169} & 0.168 \\
+ \hline
+\end{tabular}
+\caption{Avg. prediction precision of the rules learned using different measures.}
+\label{table:avg_quality}
+\end{table}

@@ -1,0 +1,123 @@
+\chapter{RuLES - Rule Learning with Embedding Support}
+\label{chapter:impl}
+Within this thesis, we have developed the Rule Learning with Embedding Support (RuLES\footnote{\url{https://github.com/hovinhthinh/RuLES}}) system that implements our hybrid rule learning approach. In this chapter, we provide details about the system implementation and its usage.
+
+\section{System Implementation}
+The Algorithms \ref{algor:mining} and \ref{algor:stats} require the following basic operations:
+\begin{itemize}
+\item Check whether a given fact is true or unknown in the given KG.
+\item Retrieve all triples having a specific predicate.
+\item Get all outgoing edges from a particular subject.
+\item Get all incoming edges to a particular object.
+\item Get all edges between a pair of a subject and an object.
+\end{itemize}
+
+To meet these requirements, following \cite{amie}, we store the knowledge graph as an in-memory database and index it using various data structures and techniques including arrays, lists, hashtables, maps, sets. Our system RuLES is implemented in Java 8 and reuses the available implementations of embedding models in different languages. Currently, the system runs on Linux and in the future we may extend it to support Windows. In what follows, we describe in details the usage of our system.
+\section{Prerequisites}
+As the prerequisites, the following software needs to be installed:
+\begin{itemize}
+\item For the mining system: \texttt{jdk (v1.8.0), ant (v1.9.4)}
+\item For the embedding models, we currently support TransE, HolE and SSP models. These models require the following software:
+\begin{itemize}
+\item TransE, HolE: \texttt{python (v2.7.9), numpy (v1.13.1), scipy (v0.19.1),}\\ \texttt{scikit-learn (v0.19.0)}
+\item SSP: \texttt{icc (v18.0.1), boost (v1.55.0.2), armadillo (v4)}
+\end{itemize}
+\end{itemize}
+\section{Installation}
+After installing the necessary software, one needs to download the source code of the RuLES system and build it using the following commands:\\
+\\
+\texttt{\$ cd mining/ \&\& ant build \&\& cd ../}\\
+\\
+For the embedding models, we reuse their existing implementations. Since the implementations of TransE and HolE are in Python, there is no need to compile their source code. However, in case we want to use SSP model, which is implemented in C++, we need to run the following command to compile it:\\
+\\
+\texttt{\$ icc -std=c++11 -O3 -qopenmp -larmadillo -xHost embedding/ssp/ssp\_main.cpp -o embedding/ssp\_main}
+\section{Data Preparation}
+Prior to running the system, one needs to prepare a \texttt{<workspace>} directory containing the file \texttt{ideal.data.txt}, which stores all facts in the input KG. Each line of this file describes a triple of the input KG in the RDF form:\\
+\\
+\texttt{subject[tab]predicate[tab]object}\\
+\\
+where \texttt{subject}, \texttt{predicate} and \texttt{object} are strings without spaces. For representing unary facts, the predicate \texttt{<type>} (with the brackets) should be used, and \texttt{object} should present the \texttt{subject}'s class as usual:\\
+\\
+\texttt{entity[tab]<type>[tab]class}\\
+\\
+We provide an example of the input file below:\\
+\\
+\texttt{He\_Would\_a\_Hunting\_Go\;\;\;\;\;\;\;\;\;\;directedBy\;\;\;\;\;\;\;\;\;\;George\_Nichols}\\
+\texttt{Tommy\_Lee\_Jones\;\;\;\;\;\;\;\;\;\;actedIn\;\;\;\;\;\;\;\;\;\;The\_Missing}\\
+\texttt{Where\_Eskimos\_Live\;\;\;\;\;\;\;\;\;\;producedIn\;\;\;\;\;\;\;\;\;\;Germany}\\
+\texttt{Too\_Beautiful\_for\_You\;\;\;\;\;\;\;\;\;\;<type>\;\;\;\;\;\;\;\;\;\;French-language\_films}\\
+\\
+Additional external data sources are required depending on the chosen embedding model. If one uses TransE or HolE models, no external data is needed. However, for the usage of SSP model, the file \texttt{entities\_description.txt} should be provided in the \texttt{<workspace>} directory. Each line of this file contains the description of an entity in the following form:\\
+\\
+\texttt{entity[tab]description}\\
+\\
+Here, \texttt{description} is space-separated string and should be preprocessed (e.g. trim, to lower case, remove special characters). Below, we provide an example of the description file:\\
+\\
+\texttt{Oklahoma\;\;\;\;\;\;\;\;\;\;state of the united states of america}\\
+\texttt{Falkland\_Islands\;\;\;\;\;\;\;\;\;\;archipelago in the south atlantic ocean}\\
+\texttt{London\;\;\;\;\;\;\;\;\;\;capital of england and the united kingdom}
+\section{Data Sampling}
+\label{how:sample}
+In the next step, the following command should be run to sample the training KG:\\
+\\
+\texttt{\$ bash gen\_data.sh <workspace> <training\_ratio>}\\
+\\
+where \texttt{<workspace>} is the workspace folder as described before, and \texttt{<training\_ratio>} denotes the ratio of the size of the training KG to the size of the input KG. Intuitively, if we want to run the system on the whole input KG, a \texttt{<training\_ratio>} of 1 should be used. In the experiments described in Section \ref{sec:eva}, the \texttt{<training\_ratio>} is set to 0.8.
+\section{Embedding Model Training}
+Depending on the desired embedding model, we run the corresponding commands to train the models.
+\begin{itemize}
+\item TransE model:\; \texttt{\$ bash run\_transe.sh --workspace <workspace> --margin <margin> --lr <learning\_rate> --ncomp <embedding\_dimension>}
+\item HolE model:\; \texttt{\$ bash run\_hole.sh --workspace <workspace> --margin <margin> --lr <learning\_rate> --ncomp <embedding\_dimension>}
+\item SSP model:\; \texttt{\$ ./embedding/ssp\_main <workspace> <embedding\_dimension>\\<learning\_rate> <margin> <balance\_factor> <joint\_weight>} 
+\end{itemize}
+where \texttt{<workspace>} is the prepared workspace folder; \texttt{<embedding\_dimension>} is the dimension of the representation vectors of subjects, predicates, objects used in these models; \texttt{<margin>} is the margin exploited in the margin-based pairwise loss training technique; \texttt{<learning\_rate>} indicates the learning rate used by the Stochastic Gradient Descent training algorithm. Moreover, \texttt{<balance\_factor>} and \texttt{<joint\_weight>} are the two parameters used by the SSP model, denoting the balance factor in the likelihood scoring function (see \ref{related:ssp}) and correspondingly the joint weight between the embedding-specific and topic-specific objective training functions. We refer to \cite{Bordes:NIPS2013,DBLP:conf/aaai/NickelRP16,DBLP:conf/aaai/0005HMZ17} for a better understanding of the parameters used by these models.
+\section{End-to-End System Execution}
+The following command runs the mining system in its most basic setting:\\
+\\
+\texttt{\$ java -jar mining/build.jar -w <workspace> -em <embedding\_model>}\\
+\\ 
+where \texttt{<workspace>} is the prepared data folder, and \texttt{<embedding\_model>} is equal to either \texttt{transe}, \texttt{hole} or \texttt{ssp}, corresponding to the embedding model being used. The system outputs mined rules to the file \texttt{<workspace>/rules.txt} on the fly. After the mining process is finished, all extracted rules are ranked in the decreasing order of the hybrid quality $\mu$ and then written to the file \texttt{<workspace>/rules.txt.sorted}.
+
+In the rest of this chapter, we list the command line options supported by RuLES, describe them in details and also discuss the extendability of our system.
+
+\section{Command Line Options}
+Our system supports the following command line options:
+\begin{itemize}
+\item \texttt{-w,--workspace <arg>}: Mandatory option denoting the working folder.
+\item \texttt{-em,--embedding\_model <arg>}: Mandatory option denoting the embedding model being used (i.e. \texttt{transe}, \texttt{hole} or \texttt{ssp}).
+\item \texttt{-ew,--embedding\_weight <arg>}: Embedding weight $\lambda$ of the hybrid scoring function (default: 0.3).
+\item \texttt{-nw,--num\_workers <arg>}: Number of parallel workers (default: 8).
+\item \texttt{-o,--output <arg> }: Output file path (default: \texttt{<workspace>/rules.txt}). Mined rules are written to this file on the fly. They will finally be ranked and written to the file \texttt{<output>.sorted}.
+\\\\ \noindent \textbf{Language-bias-based Options:}
+\item \texttt{-nv,--max\_num\_var <arg>}: Maximum number of variables of extracted rules (default: 3).
+\item \texttt{-vd,--max\_var\_deg <arg>}: Maximum variables degree (number of atoms sharing a variable) in the extracted rules (default: 3).
+\item \texttt{-nupo,--max\_num\_uniq\_pred\_occur <arg>}: Maximum number of predicate occurrences in the extracted rules (default: 2).
+\item \texttt{-na,--max\_num\_atom <arg>}: Maximum number of atoms in the extracted rules (default: 3).
+\item \texttt{-nna,--max\_num\_neg\_atom <arg>}: Maximum number of negated atoms in the extracted rules (default: 0).
+\\\\ \noindent \textbf{Statistics-based Options:}
+\item \texttt{-pca,--use\_pca\_conf}: Use PCA confidence instead of standard confidence as the measure $\mu_1$.
+\item \texttt{-ms,--min\_support <arg>}: Minimum support of extracted rules (default: 10).
+\item \texttt{-hc,--min\_hc <arg>}: Minimum head coverage of extracted rules (default: 0.01).
+\item \texttt{-mc,--min\_conf <arg>}: Minimum confidence of extracted rules (default: 0.1).
+\item \texttt{-ec,--min\_ec <arg>}: Minimum exception confidence of extracted non-monotonic rules (default: 0.05).
+\end{itemize}
+
+\section{System Extendability}
+Our system is flexible for plugging in an arbitrary embedding model. Below, we briefly discuss how to do this in Java.
+\begin{itemize}
+\item \textbf{Step 1}: After sampling the data as described in Section \ref{how:sample}, our system generates several files in the \texttt{<workspace>} directory. Among the generated files, the file \texttt{<workspace>/meta.txt} is crucial for exploiting additional embedding models. It stores the signature of the given KG in the following format:
+\begin{itemize}
+\item The first two numbers of the first line are the number of entities $e$ and relations $r$ appearing in the KG, respectively. We index the entities with IDs from $0$ to $(e-1)$ and correspondingly the relations with IDs from $0$ to $(r-1)$.
+\item Each line of the next $e$ lines stores the string value of one entity of the KG, from $0^{th}$ entity to $(e-1)^{th}$ entity.
+\item Each line of the next $r$ lines stores the string value of one relation of the KG, from $0^{th}$ relation to $(r-1)^{th}$ relation.
+\end{itemize}
+\item \textbf{Step 2}: Train the custom embedding model on the given KG. In this step, we can reuse existing implementations of the embedding model in any language.
+\item \textbf{Step 3}: Create a subclass of the abstract class \texttt{de.mpii.embedding.EmbeddingClient} that works as a bridge between our mining system and the pre-trained embedding model. This class must implement the following methods:
+\begin{itemize}
+\item A constructor that has a \texttt{String workspace} as one parameter (denoting the \texttt{<workspace>} folder) and calls the following constructor of the superclass: \texttt{super(workspace);}
+\item A function that overrides the abstract method \texttt{public abstract double getScore(int subject, int predicate, int object)}; returning the likelihood score of a fact given its subject, predicate and object ids, computed based on the pre-trained embedding model. The mapping of these ids to their real values is described in the signature file \texttt{meta.txt} above. To interact with the embedding model within this function, a naive strategy is to write all optimized parameters of the trained model from step 2 into a file, and then reload them in the constructor of this class.
+\end{itemize}
+We refer to 3 classes \texttt{de.mpii.embedding.TransEClient}, \texttt{de.mpii.embedding.} \texttt{HolEClient}, and  \texttt{de.mpii.embedding.SSPClient} for examples.
+\item \textbf{Step 4}: Edit the constructor of the class \texttt{de.mpii.mining.Miner} to add a short name (e.g. \texttt{transe},\texttt{hole} or \texttt{ssp} as we currently have) and a class instantiation for the custom embedding model.
+\item \textbf{Step 5}: Simply use the chosen short name as the value for the parameter \texttt{-em,--embedding\_model <arg>} when executing the mining system.
+\end{itemize}
